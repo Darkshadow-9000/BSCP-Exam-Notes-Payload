@@ -6,7 +6,8 @@
     
 - **Core Meaning:** Access control ensures that users can only act within their permitted permissions. When this mechanism breaks, a user can bypass authorization checks to access restricted resources, modify data, or execute unauthorized actions.
     
-- **Root Cause:** Authorization checks are missing, misconfigured, or reliant on easily guessable client-side parameters. Because access control design requires manual mapping of business logic, human configuration errors are highly frequent.
+- **Root Cause:** Authorization checks are missing, misconfigured, or reliant on easily guessable client-side parameters. Because access control design requires manual mapping of business logic, human configuration errors are highly frequent. 
+-
 
 
 ## 2. Detection & Attack Surface Mapping
