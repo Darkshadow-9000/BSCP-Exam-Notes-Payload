@@ -292,264 +292,61 @@ When facing secured or heavily custom environments where standard RCE blueprints
 
 **Extra Probing techniques for each template specific engine**
 
-SSTI Safe Confirmation Payloads
-
+**SSTI Safe Confirmation Payloads**
 Use these payloads to safely confirm Server-Side Template Injection once you have identified the underlying engine. If the output matches the "Expected Result," the vulnerability is confirmed.
-
-**Python Engines**
-
-**1.** **Jinja2 / Tornado**
-
-Jinja2 uses standard double curly braces. Python evaluates string multiplication differently than PHP, making it easy to confirm.
-
-Math Probe: {{ 7 * 7 }}
-
-Expected Result: 49
-
-String Repetition (Jinja-specific): {{ '7' * 7 }}
-
-Expected Result: 7777777
-
-Environment Probe: {{ config }} or {{ request }}
-
-Expected Result: Returns a configuration object or memory address (e.g., <Config {'ENV': 'production'...>).
-
-**2. Mako**
-
-Mako uses a syntax more closely resembling inline Python evaluation.
-
-Math Probe: ${ 7 * 7 }}
-
-Expected Result: 49
-
-String Probe: ${ 'mako'.capitalize() }
-
-Expected Result: Mako
-
-SSTI Safe Confirmation Payloads
-
-Use these payloads to safely confirm Server-Side Template Injection once you have identified the underlying engine. If the output matches the "Expected Result," the vulnerability is confirmed.
-
 Python Engines
-
 **1. Jinja2 / Tornado**
-
 Jinja2 uses standard double curly braces. Python evaluates string multiplication differently than PHP, making it easy to confirm.
 
-Math Probe: {{ 7 * 7 }}
-
-Expected Result: 49
-
-String Repetition (Jinja-specific): {{ '7' * 7 }}
-
-Expected Result: 7777777
-
-Environment Probe: {{ config }} or {{ request }}
-
-Expected Result: Returns a configuration object or memory address (e.g., <Config {'ENV': 'production'...>).
+Math Probe: {{ 7 * 7 }} → Expected: 49
+String Repetition (Jinja-specific): {{ '7' * 7 }} → Expected: 7777777
+Environment Probe: {{ config }} or {{ request }} → Expected: a config object or memory reference (e.g. <Config {'ENV': 'production'...>)
 
 **2. Mako**
+Mako uses inline-Python-style evaluation.
 
-Mako uses a syntax more closely resembling inline Python evaluation.
-
-Math Probe: ${ 7 * 7 }}
-
-Expected Result: 49
-
-String Probe: ${ 'mako'.capitalize() }
-
-Expected Result: Mako
+Math Probe: ${ 7 * 7 } → Expected: 49
+String Probe: ${ 'mako'.capitalize() } → Expected: Mako
 
 **PHP Engines**
-
 **1. Twig**
+Twig is strict about syntax but performs loose type juggling on math.
 
-Twig is strict about its syntax but performs loose type juggling on math operations.
-
-Math Probe: {{ 7 * 7 }}
-
-Expected Result: 49
-
-Type Juggling (Twig-specific): {{ 7 * '7' }}
-
-Expected Result: 49 (Twig treats the string as an integer, unlike Jinja).
-
-Version Dump: {{ dump(app) }} (Note: Only works if debugging is enabled).
+Math Probe: {{ 7 * 7 }} → Expected: 49
+Type Juggling (Twig-specific): {{ 7 * '7' }} → Expected: 49 (Twig coerces the string, unlike Jinja2)
+Version Dump: {{ dump(app) }} → only works if debug mode is enabled
 
 **2. Smarty**
+Smarty traditionally uses single curly braces.
 
-Smarty traditionally uses single curly braces, which can sometimes conflict with JSON.
-
-Math Probe: {7*7}
-
-Expected Result: 49
-
-Version Disclosure: {$smarty.version}
-
-Expected Result: The specific Smarty version number (e.g., 3.1.39).
+Math Probe: {7*7} → Expected: 49
+Version Disclosure: {$smarty.version} → Expected: version string (e.g. 3.1.39)
 
 **Java Engines**
-
 **1. FreeMarker**
 
-FreeMarker uses a dollar sign followed by curly braces. It has robust built-in string manipulation methods.
-
-Math Probe: ${7*7}
-
-Expected Result: 49
-
-String Manipulation: ${"freemarker".toUpperCase()}
-
-Expected Result: FREEMARKER
-
-Version Disclosure: ${.version}
-
-Expected Result: The FreeMarker version number (e.g., 2.3.31).
+Math Probe: ${7*7} → Expected: 49
+String Manipulation: ${"freemarker".toUpperCase()} → Expected: FREEMARKER
+Version Disclosure: ${.version} → Expected: version string (e.g. 2.3.31)
 
 **2. Velocity**
 
-Velocity uses a hash and dollar sign syntax for variables and references.
-
-Math Probe: #set($math = 7 * 7) $math
-
-Expected Result: 49
-
-Class Probe: $class.inspect("velocity")
-
-Expected Result: Returns class metadata (if standard protections aren't blocking it).
-
-Ruby Engines
-
-**1. ERB (Embedded Ruby)**
-
-ERB uses tags similar to classic ASP or JSP.
-
-Math Probe: <%= 7 * 7 %>
-
-Expected Result: 49
-
-String Multiplication: <%= 'ruby' * 2 %>
-
-Expected Result: rubyruby
-
-Version Disclosure: <%= RUBY_VERSION %>
-
-Expected Result: The underlying Ruby version (e.g., 3.0.2).
-
-**Node.js Engines**
-
-**1. Pug (formerly Jade)**
-
-Pug relies heavily on indentation and uses a minimalist syntax.
-
-Math Probe: #{7*7}
-
-Expected Result: 49
-
-Global Object Probe: #{root.process.version} or #{GLOBAL.process.version}
-
-Expected Result: The Node.js version environment variable.
-
-**2. EJS (Embedded JavaScript)**
-
-EJS uses syntax very similar to Ruby's ERB.
-
-Math Probe: <%= 7 * 7 %>
-
-Expected Result: 49
-
-**1. Twig**
-
-Twig is strict about its syntax but performs loose type juggling on math operations.
-
-Math Probe: {{ 7 * 7 }}
-
-Expected Result: 49
-
-Type Juggling (Twig-specific): {{ 7 * '7' }}
-
-Expected Result: 49 (Twig treats the string as an integer, unlike Jinja).
-
-Version Dump: {{ dump(app) }} (Note: Only works if debugging is enabled).
-
-**2. Smarty**
-
-Smarty traditionally uses single curly braces, which can sometimes conflict with JSON.
-
-Math Probe: {7*7}
-
-Expected Result: 49
-
-Version Disclosure: {$smarty.version}
-
-Expected Result: The specific Smarty version number (e.g., 3.1.39).
-
-**Java Engines**
-
-**1. FreeMarker**
-
-FreeMarker uses a dollar sign followed by curly braces. It has robust built-in string manipulation methods.
-
-Math Probe: ${7*7}
-
-Expected Result: 49
-
-String Manipulation: ${"freemarker".toUpperCase()}
-
-Expected Result: FREEMARKER
-
-Version Disclosure: ${.version}
-
-Expected Result: The FreeMarker version number (e.g., 2.3.31).
-
-**2. Velocity**
-
-Velocity uses a hash and dollar sign syntax for variables and references.
-
-Math Probe: #set($math = 7 * 7) $math
-
-Expected Result: 49
-
-Class Probe: $class.inspect("velocity")
-
-Expected Result: Returns class metadata (if standard protections aren't blocking it).
+Math Probe: #set($math = 7 * 7) $math → Expected: 49
+Class Probe: $class.inspect("velocity") → returns class metadata if protections aren't blocking it (worth flagging: this isn't a standard Velocity built-in — it only works if the app explicitly exposes an inspect-style utility object in its context; don't rely on it as a generic probe the way the others are)
 
 **Ruby Engines**
+**1. ERB**
 
-**1. ERB (Embedded Ruby)**
-
-ERB uses tags similar to classic ASP or JSP.
-
-Math Probe: <%= 7 * 7 %>
-
-Expected Result: 49
-
-String Multiplication: <%= 'ruby' * 2 %>
-
-Expected Result: rubyruby
-
-Version Disclosure: <%= RUBY_VERSION %>
-
-Expected Result: The underlying Ruby version (e.g., 3.0.2).
+Math Probe: <%= 7 * 7 %> → Expected: 49
+String Multiplication: <%= 'ruby' * 2 %> → Expected: rubyruby
+Version Disclosure: <%= RUBY_VERSION %> → Expected: version string (e.g. 3.0.2)
 
 **Node.js Engines**
+**1. Pug**
 
-**1. Pug (formerly Jade)**
+Math Probe: #{7*7} → Expected: 49
+Global Object Probe: #{root.process.version} or #{GLOBAL.process.version} → Expected: Node version string
 
-Pug relies heavily on indentation and uses a minimalist syntax.
+**2. EJS**
 
-Math Probe: #{7*7}
-
-Expected Result: 49
-
-Global Object Probe: #{root.process.version} or #{GLOBAL.process.version}
-
-Expected Result: The Node.js version environment variable.
-
-**2. EJS (Embedded JavaScript)**
-
-EJS uses syntax very similar to Ruby's ERB.
-
-Math Probe: <%= 7 * 7 %>
-
-Expected Result: 49
+Math Probe: <%= 7 * 7 %> → Expected: 49
