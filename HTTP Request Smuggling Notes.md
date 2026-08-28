@@ -195,13 +195,7 @@ x=1
 - Probes: duplicate CLs, obfuscated/whitespace headers, multiple TE tokens, partial bodies, varied CRLF termination.
 - Burp tips: disable Update Content-Length, use raw header editor, toggle Protocol in Inspector, Shift+Enter for CRLF.
 
----
 
-## README linking (optional)
-
-If you'd like, I can also add a short README entry that links to this notes file from the repository root (README.md) so it's discoverable from the project home. Say "Yes — add README link" and I'll create/update README.md with a short description and a link.
-
----
 
 ## Final notes
 
