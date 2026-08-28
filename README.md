@@ -195,5 +195,4 @@ This repository is for **educational purposes only**. Use this knowledge respons
 
 ---
 
-*Last Updated: 2026*  
-*Maintained by: Security Community*
+*Last Updated: 2026* 
