@@ -200,5 +200,3 @@ x=1
 ## Final notes
 
 I updated wording for clarity, added more probing techniques that are simple to understand, included Burp settings and a handy cheat-sheet. If you want screenshots or sample Burp project files I can add instructions and placeholders; I can't create real screenshots here but I can produce step-by-step image descriptions or a script to export Burp items.
-
-Tell me if you want the README link now or screenshots or a condensed printable PDF-style markdown and I will add it next.
