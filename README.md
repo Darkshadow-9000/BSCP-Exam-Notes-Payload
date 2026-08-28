@@ -12,9 +12,9 @@ The **BSCP exam** consists of **two independent web applications**, with **two h
 
 | Stage | Goal | Time Limit |
 |-------|------|-----------|
-| **Stage 1** | Gain Access to Any User Account | Part of 2 hrs |
-| **Stage 2** | Escalate Privileges to Admin | Part of 2 hrs |
-| **Stage 3** | Read `/home/carlos/secret` | Part of 2 hrs |
+| **Stage 1** | Gain Access to Any User Account | Part of 4 hrs |
+| **Stage 2** | Escalate Privileges to Admin | Part of 4 hrs |
+| **Stage 3** | Read `/home/carlos/secret` | Part of 4 hrs |
 
 ---
 
